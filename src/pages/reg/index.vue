@@ -25,11 +25,11 @@
 						<u-input placeholder="请输入手机号" v-model="userInfo.phone" border="none"></u-input>
 					</u-form-item>
 				</view>
-				<view class="item">
+				<!-- <view class="item">
 					<u-form-item label="地址" prop="address" ref="address">
 						<u-input placeholder="请输入地址" v-model="userInfo.address" border="none"></u-input>
 					</u-form-item>
-				</view>
+				</view> -->
 				<view class="item">
 					<u-form-item label="角色" prop="role" @click="showRole = true;" ref="role">
 						<u-input v-model="userInfo.role" disabled disabledColor="#ffffff" placeholder="请选择角色"
@@ -38,17 +38,17 @@
 							<u-icon name="arrow-right"></u-icon>
 						</template>
 					</u-form-item>
-				</view>	
+				</view>
 				<view class="item">
 					<u-form-item label="密码" prop="password" ref="password">
 						<u-input type="password" clearable placeholder="请输入密码" v-model="userInfo.password"
-						border="none"></u-input>
+							border="none"></u-input>
 					</u-form-item>
 				</view>
 				<view class="item">
-					<u-form-item  prop="pwd" ref="pwd">
-						<u-input type="password" clearable placeholder="请重复输入密码" prefixIcon="lock" prefixIconStyle="font-size: 20px;" v-model="userInfo.pwd"
-						border="none"></u-input>
+					<u-form-item prop="pwd" ref="pwd">
+						<u-input type="password" clearable placeholder="请重复输入密码" prefixIcon="lock"
+							prefixIconStyle="font-size: 20px;" v-model="userInfo.pwd" border="none"></u-input>
 					</u-form-item>
 				</view>
 			</u-form>
@@ -58,21 +58,25 @@
 		</view>
 		<u-action-sheet :show="showSex" :actions="actions.sex" title="请选择性别" @close="showSex = false" @select="sexSelect">
 		</u-action-sheet>
-		<u-action-sheet :show="showRole" :actions="actions.role" title="请选择角色" @close="showRole = false" @select="roleSelect">
+		<u-action-sheet :show="showRole" :actions="actions.role" title="请选择角色" @close="showRole = false"
+			@select="roleSelect">
 		</u-action-sheet>
+		<u-toast ref="toast"></u-toast>
 	</view>
 </template>
 
 <script setup lang="ts">
 import { reactive, ref } from "vue";
+import { getRegApi, deliveryRegApi } from "@/api/login/index"
 let showSex = ref(false);
 let showRole = ref(false);
 const form = ref();
+const toast = ref();
 const userInfo = reactive({
 	name: '',
 	sex: '',
 	phone: '',
-	address: '',
+	// address: '',
 	password: "",
 	pwd: "",
 	role: "",
@@ -84,10 +88,10 @@ const actions = reactive({
 	{
 		name: '女',
 	}],
-	role:[{
-		name:"用户"
-	},{
-		name:"送货员"
+	role: [{
+		name: "个人用户"
+	}, {
+		name: "配送员"
 	}]
 })
 const rules = reactive({
@@ -119,19 +123,19 @@ const rules = reactive({
 		// 触发器可以同时用blur和change
 		trigger: ['change', 'blur'],
 	}],
-	address: {
-		type: 'string',
-		required: true,
-		message: '请填写地址',
-		trigger: ['blur', 'change']
-	},
+	// address: {
+	// 	type: 'string',
+	// 	required: true,
+	// 	message: '请填写地址',
+	// 	trigger: ['blur', 'change']
+	// },
 	role: {
 		type: 'string',
 		required: true,
 		message: '请选择角色',
 		trigger: ['blur', 'change']
 	},
-	password:[{
+	password: [{
 		type: 'string',
 		required: true,
 		message: '请填写密码',
@@ -140,24 +144,24 @@ const rules = reactive({
 	{
 		type: 'string',
 		required: true,
-		min:6,
+		min: 6,
 		message: '密码至少6位',
 		trigger: ['blur', 'change']
 	},
-    ],
-	pwd:[{
+	],
+	pwd: [{
 		type: 'string',
 		required: true,
 		message: '请重复输入密码',
 		trigger: ['blur', 'change']
-	},{
+	}, {
 		validator: (rule: any, value: any, callback: any) => {
-			if(value===userInfo.password){
+			if (value === userInfo.password) {
 				return true;
-			}else {
+			} else {
 				return false;
 			}
-			
+
 		},
 		message: '两次输入密码不同',
 		// 触发器可以同时用blur和change
@@ -168,19 +172,69 @@ function sexSelect(e: any) {
 	userInfo.sex = e.name
 	form.value.validateField('userInfo.sex')
 }
-function roleSelect(e:any){
-	userInfo.role=e.name;
+function roleSelect(e: any) {
+	userInfo.role = e.name;
 	form.value.validateField('userInfo.role')
 }
 function submit() {
 	form.value.validate().then((res: any) => {
-		console.log(res);
-		
+		reg();
+
 	}).catch((error: any) => {
 		uni.$u.toast(error[0].message)
 	})
 }
-function reg(){
+async function reg() {
+	toast.value.show({
+		type: 'loading',
+		title: '正在加载',
+		message: "正在加载",
+		iconUrl: 'https://cdn.uviewui.com/uview/demo/toast/loading.png',
+		duration: 5000
+	})
+	if (userInfo.role === '个人用户') {
+		getRegApi({
+			userName: userInfo.name,
+			userPhone: userInfo.phone,
+			userPassword: userInfo.password,
+			gender: userInfo.sex,
+			role: userInfo.role,	
+		}).then(res => {
+			uni.redirectTo({
+				url: '/pages/login/index',
+				success: (success) => {
+					uni.$u.toast('注册成功');
+				},
+			})
+		}).catch((err: any) => {
+			uni.$u.toast(err);
+		}).finally(() => {
+			toast.value.hide();
+		})
+
+	}else {
+		deliveryRegApi({
+			deliveryName:userInfo.name,
+			deliveryPassword:userInfo.password,
+			deliveryPhone:userInfo.phone,
+			gender:userInfo.sex,
+			role:userInfo.role
+		}).then(res => {
+			uni.redirectTo({
+				url: '/pages/login/index',
+				success: (success) => {
+					uni.$u.toast('注册成功');
+				},
+			})
+		}).catch((err: any) => {
+			uni.$u.toast(err);
+		}).finally(() => {
+			toast.value.hide();
+		})
+	}
+
+
+
 
 }
 </script>
@@ -210,6 +264,7 @@ function reg(){
 			margin-top: 15px;
 		}
 	}
+
 	.btn-box {
 		margin-top: 60rpx;
 		width: 60%;

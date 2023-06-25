@@ -14,6 +14,7 @@
     "dev:mp-kuaishou": "uni -p mp-kuaishou",
     "dev:mp-lark": "uni -p mp-lark",
     "dev:mp-qq": "uni -p mp-qq",
+    "dev":"uni -p mp-weixin --mode production",
     "dev:mp-toutiao": "uni -p mp-toutiao",
     "dev:mp-weixin": "uni -p mp-weixin --mode development",
     "dev:quickapp-webview": "uni -p quickapp-webview",

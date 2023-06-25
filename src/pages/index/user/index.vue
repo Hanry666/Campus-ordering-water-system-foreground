@@ -29,21 +29,22 @@
 import { ref, reactive } from 'vue'
 import bottomBar from "@/component/bottomBar/index.vue";
 import itemListVue from "@/component/itemList/index.vue";
-import {getScrollingProductsApi,getProductCategoriesApi,getProductCategoriesItemApi} from "@/api/user-item/index";
-const swiperList = reactive<Array<string>>([])  //轮播图图片
+import { getScrollingProductsApi, getProductCategoriesApi, getProductCategoriesItemApi } from "@/api/user-item/index";
+import type { ProductCategoriesResponseData, ProductCategoriesItemResponseData } from "@/api/user-item/types/index"
+const swiperList = reactive<Array<string>>([
+    'https://cdn.uviewui.com/uview/swiper/swiper1.png',
+    'https://cdn.uviewui.com/uview/swiper/swiper2.png',
+    'https://cdn.uviewui.com/uview/swiper/swiper3.png',
+    ])  //轮播图图片
 let noticeText = ref("欢迎来到校园订水配送系统");  //提示文字
-/**
- * 登录方法
- */
-function login() {
-    uni.switchTab({
-        url: "/page/login/index"
-    })
-}
 
-const itemNavList = reactive<Array<any>>([
+
+const itemNavList = reactive<Array<{
+    name: string;
+    id: number;
+}>>([
 ])  //物品导航栏
-const itemList=reactive([
+let itemList = reactive<ProductCategoriesItemResponseData>([
 
 ]);
 /**
@@ -51,29 +52,36 @@ const itemList=reactive([
  * @param val 
  */
 function changeItemNavHandler(val: any) {
-    console.log(val);
-
+    getProductCategoriesItemApi({
+        categoryId: val.id
+    }).then(res => {
+        itemList.length = 0;
+        itemList.push(...res.data);
+        
+    })
 }
 /**
  * 获取数据
  */
-async function getPageData(){
-    getScrollingProductsApi().then(res=>{
-        res.data.forEach(item=>{
-            swiperList.push(item.imageUrl)
+async function getPageData() {
+    getScrollingProductsApi().then(res => {
+        // res.data.forEach(item=>{
+        //     swiperList.push(item.imageUrl);
+
+        // })
+    })
+    getProductCategoriesApi().then(res => {
+        res.data.forEach(item => {
+            itemNavList.push({ name: item.categoryName, id: item.categoryId });
+        })
+        getProductCategoriesItemApi({
+            categoryId: itemNavList[0].id
+        }).then(res => {
+            itemList.length = 0;
+            itemList.push(...res.data);
         })
     })
-    getProductCategoriesApi().then(res=>{
-        res.data.forEach(item=>{    
-            itemNavList.push({name:item.categoryName});
-        })
-    })
-    getProductCategoriesItemApi({
-        categoryId:0
-    }).then(res=>{
-        console.log(res,'---');
-        
-    })
+
 }
 getPageData();
 
@@ -125,4 +133,5 @@ function clickUserHandler(val: number) {
         left: 0;
         width: 100%;
     }
-}</style>
+}
+</style>

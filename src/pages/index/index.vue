@@ -1,7 +1,7 @@
 <template>
 <view class="index">
   <u-toast ref="toast"></u-toast>
-  <senderIndex v-if="show"></senderIndex>
+  <senderIndex v-if="userStore.isLogin&&!userStore.role"></senderIndex>
   <userIndex v-else></userIndex>
   
 </view>
@@ -10,34 +10,9 @@
 import {ref} from 'vue';
 import senderIndex from "./sender/index.vue";
 import userIndex from "./user/index.vue";
-import {onPullDownRefresh,onReady} from "@dcloudio/uni-app";
-import {getLoginApi} from "@/api/login/index";
+import {useUserStore} from "@/store/modules/user"
+const userStore=useUserStore();
 const toast=ref();
-// getLoginApi().then(res=>{
-
-// })
-onReady(()=>{
-  console.log(toast.value);
-  
-})
-onPullDownRefresh(()=>{
-  console.log(toast.value);
-  toast.value.show({
-    type: 'loading',
-		title: '正在加载',
-		message: "正在加载",
-		iconUrl: 'https://cdn.uviewui.com/uview/demo/toast/loading.png',
-    duration:6000
-  });
-  setTimeout(()=>{
-  toast.value.hide();
-  uni.stopPullDownRefresh();
-  toast.value.show({
-    message:"加载成功！"
-  })
-  },3000)
-
-})
 let show=ref(false);
 </script>
 <style lang="less" scoped>

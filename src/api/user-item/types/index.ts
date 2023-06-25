@@ -1,6 +1,10 @@
 
 export type ScrollingProductsResponseData =Array<{
   /**
+   * 商品ID
+   */
+  carouselId:number;
+  /**
    * 商品种类
    */
   categoryName: string;

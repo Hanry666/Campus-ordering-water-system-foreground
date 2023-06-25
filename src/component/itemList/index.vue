@@ -1,43 +1,74 @@
 <template>
     <view class="item-list">
-        <view class="empty"  v-show="itemList.length === 0">
+        <view class="empty"  v-show="props.itemList.length === 0">
             <u-empty mode="data" icon="http://cdn.uviewui.com/uview/empty/car.png">
         </u-empty>
         </view>
 
-        <view class="item-box" v-for="(item,index) in 15" :key="index">
+        <view class="item-box" v-for="(item,index) in props.itemList" :key="index">
             <view class="item">
-                <view class="img-box"></view>
+                <view class="img-box">
+                    <!-- <image  :src="item.imageUrl"></image> -->
+                </view>
                 <view class="right">
                     <view class="title">
-                        <u-text :lines="1" text="测试测试测试测试测测试测试测试测试试12318294"></u-text>
+                        <u-text :lines="1" :text="item.productName"></u-text>
                     </view>
                     <view class="bottom">
                         <view class="money">
-                            <u-text mode="price" text="100"></u-text>
+                            <u-text mode="price" :text="item.productPrice"></u-text>
                         </view>
-                        <view class="add">
-                            <u-number-box :min="0" v-model="addValue" ></u-number-box>
+                        <view class="add" @click="addItem(item.productId)">
+                            <u-icon name="plus-circle-fill" color="#2979ff" size="18"></u-icon>
                         </view>
                     </view>
                 </view>
             </view>
         </view>
+        <u-toast ref="toast"></u-toast>
     </view>
 </template>
 <script setup lang="ts">
 import { reactive,ref } from 'vue';
+import type {ProductCategoriesItemResponseData} from "@/api/user-item/types/index"
+import {addProductApi} from "@/api/shoppingCart/index"
+import { useUserStore } from '@/store/modules/user';
+const userStore=useUserStore();
 const props=withDefaults(defineProps<{
-    
+  itemList?: ProductCategoriesItemResponseData
 }>(),{
+    itemList:()=>[]
+});
+console.log(props.itemList);
 
-})
-const itemList = reactive([
-    {
-        name:1
+const toast=ref();
+function addItem(id:number){
+    if(!userStore.isLogin){
+        uni.$u.toast("请先登录！");
+        return ;
     }
-]);
-const addValue=ref<number>(0);
+    toast.value.show({
+		type: 'loading',
+		title: '正在加载',
+		message: "正在加载",
+		iconUrl: 'https://cdn.uviewui.com/uview/demo/toast/loading.png',
+		duration: 5000
+	})
+    addProductApi({
+        productId:id,
+        productQuantity:1,
+        userId:userStore.userId
+    }).then(res=>{
+        uni.$u.toast("加入购物车成功");
+        console.log(res);
+    }).catch(err=>{
+        console.log(err);
+        
+    }).finally(()=>{
+        toast.value.hide();
+    })
+}
+
 </script>
 <style lang="less" scoped>
 .item-list {
@@ -66,7 +97,7 @@ const addValue=ref<number>(0);
 
             .img-box {
                 width: 30%;
-                background-color: red;
+                background-color: antiquewhite;
                 height: 100%;
                 flex-shrink: 0;
             }

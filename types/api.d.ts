@@ -1,5 +1,5 @@
 interface ApiResponseData<T> {
-    code: number
+    code: 200|201
     data: T
     msg: string
 }

@@ -1,5 +1,6 @@
 const enum Names {
-    User= "user"
+    User= "user",
+    Shopping='shopping'
 }
 
 export default Names;
